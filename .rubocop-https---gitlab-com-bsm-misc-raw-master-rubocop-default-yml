@@ -1,0 +1,67 @@
+AllCops:
+  Exclude:
+    - "db/schema.rb"
+    - "vendor/**/*"
+    - "**/*_pb.rb"
+
+Metrics/AbcSize:
+  Enabled: false
+Metrics/BlockLength:
+  Exclude:
+    - "**/*.rake"
+    - "db/**/*.rb"
+    - "**/spec/**/*.rb"
+    - "**/*.gemspec"
+Metrics/ClassLength:
+  Max: 1500
+Metrics/CyclomaticComplexity:
+  Max: 20
+Metrics/MethodLength:
+  Max: 20
+  Exclude:
+    - "db/**/*.rb"
+Metrics/ModuleLength:
+  Exclude:
+    - "**/*_spec.rb"
+Metrics/PerceivedComplexity:
+  Max: 20
+
+Layout/FirstArrayElementIndentation:
+  EnforcedStyle: consistent
+Layout/HashAlignment:
+  EnforcedHashRocketStyle: table
+Layout/LineLength:
+  Max: 160
+Layout/ParameterAlignment:
+  EnforcedStyle: with_fixed_indentation
+Layout/MultilineOperationIndentation:
+  Enabled: false
+Layout/SpaceInsideBlockBraces:
+  SpaceBeforeBlockParameters: false
+
+Lint/AmbiguousBlockAssociation:
+  Exclude:
+    - "spec/**/*_spec.rb"
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
+Style/FrozenStringLiteralComment:
+  Enabled: false
+Style/HashSyntax:
+  EnforcedStyle: ruby19_no_mixed_keys
+Style/MultilineIfModifier:
+  Enabled: false
+Style/NumericLiterals:
+  Enabled: false
+Style/Semicolon:
+  AllowAsExpressionSeparator: true
+Style/SingleLineBlockParams:
+  Enabled: false
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: consistent_comma
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: consistent_comma
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: consistent_comma
