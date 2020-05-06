@@ -12,7 +12,7 @@ module FireJWT
     # @option opts [Boolean] :verify_iat verify the issued at claim. Default: false.
     # @option opts [Integer] :exp_leeway expiration leeway in seconds. Default: none.
     def initialize(**opts)
-      @defaults = norm_opts(opts.dup)
+      @defaults = opts.dup
       @keys = KeySet.new
     end
 
@@ -38,9 +38,9 @@ module FireJWT
     private
 
     def norm_opts(opts)
-      opts[:verify_aud] = !opts.key?(:aud) unless opts.key?(:verify_aud)
-      opts[:verify_iss] = !opts.key?(:iss) unless opts.key?(:verify_iss)
-      opts[:verify_sub] = !opts.key?(:sub) unless opts.key?(:verify_sub)
+      opts[:verify_aud] = opts.key?(:aud) unless opts.key?(:verify_aud)
+      opts[:verify_iss] = opts.key?(:iss) unless opts.key?(:verify_iss)
+      opts[:verify_sub] = opts.key?(:sub) unless opts.key?(:verify_sub)
       opts[:algorithm] ||= 'RS256'
       opts
     end

@@ -38,6 +38,18 @@ RSpec.describe FireJWT::Validator do
     )
   end
 
+  it 'should normalize options' do
+    expect(JWT).to receive(:decode).with(
+      instance_of(String),
+      nil,
+      true,
+      algorithm: 'RS256',
+      verify_aud: false,
+      verify_iss: false,
+      verify_sub: false,
+    ).and_return([{}, {}])
+    subject.decode(token)
+  end
   it 'should reject bad tokens' do
     expect { subject.decode('BAD') }.to raise_error(JWT::DecodeError)
   end
