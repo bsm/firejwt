@@ -4,7 +4,7 @@ require 'uri'
 require 'openssl'
 
 module FireJWT
-  class KeySet < Hash
+  class Certificates
     URL = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com'.freeze
 
     attr_reader :expires_at
@@ -12,14 +12,17 @@ module FireJWT
     def initialize(url: URL)
       super()
 
-      @url = URI(url)
+      @url  = URI(url)
+      @keys = {}
+
       expire!
       refresh!
     end
 
-    def get(key)
+    def get(kid)
       refresh! if expired?
-      self[key]
+
+      @keys[kid]
     end
 
     def refresh!(limit = 5)
@@ -33,8 +36,11 @@ module FireJWT
       raise ArgumentError, 'Expires header not included in the response' unless resp['expires']
 
       @expires_at = Time.httpdate(resp['expires'])
-      JSON.parse(resp.body).each do |kid, cert|
-        store kid, OpenSSL::X509::Certificate.new(cert).public_key
+      @keys.clear
+
+      JSON.parse(resp.body).each do |kid, pem|
+        cert = OpenSSL::X509::Certificate.new(pem)
+        @keys.store kid, cert.public_key
       end
     end
 
