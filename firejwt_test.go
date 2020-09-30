@@ -43,28 +43,7 @@ var _ = Describe("Validator", func() {
 				certKID: string(certPEM),
 			})
 		}))
-
-		now := time.Now().Unix()
-		claims = &firejwt.Claims{
-			Name:          "Me",
-			Picture:       "https://test.host/me.jpg",
-			Subject:       "MDYwNDQwNjUtYWQ0ZC00ZDkwLThl",
-			UserID:        "MDYwNDQwNjUtYWQ0ZC00ZDkwLThl",
-			Audience:      "mock-project",
-			Issuer:        "https://securetoken.google.com/mock-project",
-			IssuedAt:      now - 1800,
-			ExpiresAt:     now + 3600,
-			AuthAt:        now,
-			Email:         "me@example.com",
-			EmailVerified: true,
-			Firebase: &firejwt.FirebaseClaim{
-				SignInProvider: "google.com",
-				Identities: map[string][]string{
-					"google.com": {"123123123123123123123"},
-					"email":      {"me@example.com"},
-				},
-			},
-		}
+		claims = mockClaims(time.Now().Unix())
 
 		var err error
 		subject, err = firejwt.Mocked(server.URL)
@@ -136,6 +115,32 @@ var _ = Describe("Validator", func() {
 	})
 })
 
+var _ = Describe("Claims", func() {
+	It("should be JWT compatible", func() {
+		claims := mockClaims(1515151515)
+		Expect(json.Marshal(claims)).To(MatchJSON(`{
+			"name": "Me",
+			"picture": "https://test.host/me.jpg",
+			"sub": "MDYwNDQwNjUtYWQ0ZC00ZDkwLThl",
+			"user_id": "MDYwNDQwNjUtYWQ0ZC00ZDkwLThl",
+			"aud": "mock-project",
+			"iss": "https://securetoken.google.com/mock-project",
+			"iat": 1515149715,
+			"exp": 1515155115,
+			"auth_time": 1515151515,
+			"email": "me@example.com",
+			"email_verified": true,
+			"firebase": {
+				"sign_in_provider": "google.com",
+				"identities": {
+					"google.com": ["123123123123123123123"],
+					"email": ["me@example.com"]
+				}
+			}
+		}`))
+	})
+})
+
 func TestSuite(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "firejwt")
@@ -180,3 +185,26 @@ var _ = BeforeSuite(func() {
 	Expect(pem.Encode(buf, &pem.Block{Type: "CERTIFICATE", Bytes: cert})).To(Succeed())
 	certPEM = buf.String()
 })
+
+func mockClaims(now int64) *firejwt.Claims {
+	return &firejwt.Claims{
+		Name:          "Me",
+		Picture:       "https://test.host/me.jpg",
+		Subject:       "MDYwNDQwNjUtYWQ0ZC00ZDkwLThl",
+		UserID:        "MDYwNDQwNjUtYWQ0ZC00ZDkwLThl",
+		Audience:      "mock-project",
+		Issuer:        "https://securetoken.google.com/mock-project",
+		IssuedAt:      now - 1800,
+		ExpiresAt:     now + 3600,
+		AuthAt:        now,
+		Email:         "me@example.com",
+		EmailVerified: true,
+		Firebase: &firejwt.FirebaseClaim{
+			SignInProvider: "google.com",
+			Identities: map[string][]string{
+				"google.com": {"123123123123123123123"},
+				"email":      {"me@example.com"},
+			},
+		},
+	}
+}
