@@ -134,7 +134,7 @@ func (v *Validator) loop(ctx context.Context) {
 	defer t.Stop()
 
 	for {
-		d := v.ExpTime().Sub(time.Now()) - time.Hour
+		d := time.Until(v.ExpTime()) - time.Hour
 		if d < time.Minute {
 			d = time.Minute
 		}

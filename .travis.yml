@@ -17,4 +17,7 @@ matrix:
         - gem install bundler
     - language: go
       go:
-        - 1.13.x
+        - 1.15.x
+    - language: go
+      go:
+        - 1.14.x
