@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name          = 'firejwt'
-  s.version       = '0.2.0'
+  s.version       = '0.3.0'
   s.authors       = ['Black Square Media Ltd']
   s.email         = ['info@blacksquaremedia.com']
   s.summary       = %(Firebase JWT validation)

@@ -59,8 +59,15 @@ func (v *Validator) Stop() {
 }
 
 // Decode decodes the token
-func (v *Validator) Decode(tokenString string) (*jwt.Token, error) {
-	return jwt.ParseWithClaims(tokenString, new(Claims), v.verify)
+func (v *Validator) Decode(tokenString string) (*Claims, error) {
+	claims := new(Claims)
+	token, err := jwt.ParseWithClaims(tokenString, claims, v.verify)
+	if err != nil {
+		return nil, err
+	} else if !token.Valid {
+		return nil, errTokenInvalid
+	}
+	return claims, nil
 }
 
 // ExpTime returns the expiration time.
@@ -97,6 +104,7 @@ var (
 	errIssuedFuture = errors.New("issued in the future")
 	errNoSubject    = errors.New("subject is missing")
 	errAuthFuture   = errors.New("auth-time in the future")
+	errTokenInvalid = errors.New("token is invalid")
 )
 
 func (v *Validator) verify(token *jwt.Token) (interface{}, error) {

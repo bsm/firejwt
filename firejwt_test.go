@@ -25,10 +25,10 @@ import (
 var _ = Describe("Validator", func() {
 	var subject *firejwt.Validator
 	var server *httptest.Server
-	var claims *firejwt.Claims
+	var seeds *firejwt.Claims
 
 	generate := func() string {
-		token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+		token := jwt.NewWithClaims(jwt.SigningMethodRS256, seeds)
 		token.Header["kid"] = certKID
 
 		data, err := token.SignedString(privKey)
@@ -43,7 +43,7 @@ var _ = Describe("Validator", func() {
 				certKID: string(certPEM),
 			})
 		}))
-		claims = mockClaims(time.Now().Unix())
+		seeds = mockClaims(time.Now().Unix())
 
 		var err error
 		subject, err = firejwt.Mocked(server.URL)
@@ -60,10 +60,9 @@ var _ = Describe("Validator", func() {
 	})
 
 	It("should decode tokens", func() {
-		token, err := subject.Decode(generate())
+		claims, err := subject.Decode(generate())
 		Expect(err).NotTo(HaveOccurred())
-		Expect(token.Valid).To(BeTrue())
-		Expect(token.Claims).To(Equal(claims))
+		Expect(claims).To(Equal(seeds))
 	})
 
 	It("should reject bad tokens", func() {
@@ -73,42 +72,42 @@ var _ = Describe("Validator", func() {
 	})
 
 	It("should verify exp", func() {
-		claims.ExpiresAt = time.Now().Unix() - 1
+		seeds.ExpiresAt = time.Now().Unix() - 1
 		_, err := subject.Decode(generate())
 		Expect(err).To(MatchError(`token has expired`))
 		Expect(err).To(BeAssignableToTypeOf(&jwt.ValidationError{}))
 	})
 
 	It("should verify iat", func() {
-		claims.IssuedAt = time.Now().Unix() + 1
+		seeds.IssuedAt = time.Now().Unix() + 1
 		_, err := subject.Decode(generate())
 		Expect(err).To(MatchError(`issued in the future`))
 		Expect(err).To(BeAssignableToTypeOf(&jwt.ValidationError{}))
 	})
 
 	It("should verify aud", func() {
-		claims.Audience = "other"
+		seeds.Audience = "other"
 		_, err := subject.Decode(generate())
 		Expect(err).To(MatchError(`invalid audience claim "other"`))
 		Expect(err).To(BeAssignableToTypeOf(&jwt.ValidationError{}))
 	})
 
 	It("should verify iss", func() {
-		claims.Issuer = "other"
+		seeds.Issuer = "other"
 		_, err := subject.Decode(generate())
 		Expect(err).To(MatchError(`invalid issuer claim "other"`))
 		Expect(err).To(BeAssignableToTypeOf(&jwt.ValidationError{}))
 	})
 
 	It("should verify sub", func() {
-		claims.Subject = ""
+		seeds.Subject = ""
 		_, err := subject.Decode(generate())
 		Expect(err).To(MatchError(`subject is missing`))
 		Expect(err).To(BeAssignableToTypeOf(&jwt.ValidationError{}))
 	})
 
 	It("should verify auth time", func() {
-		claims.AuthAt = time.Now().Unix() + 1
+		seeds.AuthAt = time.Now().Unix() + 1
 		_, err := subject.Decode(generate())
 		Expect(err).To(MatchError(`auth-time in the future`))
 		Expect(err).To(BeAssignableToTypeOf(&jwt.ValidationError{}))
@@ -117,8 +116,8 @@ var _ = Describe("Validator", func() {
 
 var _ = Describe("Claims", func() {
 	It("should be JWT compatible", func() {
-		claims := mockClaims(1515151515)
-		Expect(json.Marshal(claims)).To(MatchJSON(`{
+		subject := mockClaims(1515151515)
+		Expect(json.Marshal(subject)).To(MatchJSON(`{
 			"name": "Me",
 			"picture": "https://test.host/me.jpg",
 			"sub": "MDYwNDQwNjUtYWQ0ZC00ZDkwLThl",

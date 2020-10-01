@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    firejwt (0.2.0)
+    firejwt (0.3.0)
       jwt
 
 GEM
