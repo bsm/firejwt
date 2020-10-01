@@ -13,11 +13,11 @@ Decode and validate [Google Firebase](https://firebase.google.com/) JWT tokens w
 require 'firejwt'
 
 # Init a validator
-validator = FireJWT::Validator.new
+validator = FireJWT::Validator.new 'my-project'
 
 # Decode a token
 token = begin
-  validator.decode('eyJh...YbQ') # => {'sub' => 'me@example.com', 'aud' => 'my-audience'}
+  validator.decode('eyJh...YbQ') # => {'sub' => 'me@example.com', 'aud' => 'my-project'}
 rescue JWT::DecodeError
   nil
 end
@@ -35,7 +35,7 @@ import (
 )
 
 func main() {
-  vr, err := firejwt.New(nil)
+  vr, err := firejwt.New("my-project")
   if err != nil {
     log.Fatalln(err)
   }
@@ -46,6 +46,6 @@ func main() {
     log.Fatalln(err)
   }
 
-  log.Println(tk.Claims) // => {"sub": "me@example.com", "aud": "my-audience"}
+  log.Println(tk.Claims) // => {"sub": "me@example.com", "aud": "my-project"}
 }
 ```

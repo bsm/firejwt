@@ -1,5 +1,5 @@
 module FireJWT
-  autoload :KeySet, 'firejwt/key_set'
+  autoload :Certificates, 'firejwt/certificates'
   autoload :Validator, 'firejwt/validator'
 
   class Token < Hash
