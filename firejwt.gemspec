@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name          = 'firejwt'
-  s.version       = '0.3.0'
+  s.version       = '0.3.1'
   s.authors       = ['Black Square Media Ltd']
   s.email         = ['info@blacksquaremedia.com']
   s.summary       = %(Firebase JWT validation)
@@ -16,6 +16,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'jwt'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'rspec'
-  s.add_development_dependency 'rubocop'
+  s.add_development_dependency 'rubocop-bsm'
   s.add_development_dependency 'webmock'
 end

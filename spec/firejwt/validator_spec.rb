@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 RSpec.describe FireJWT::Validator do
+  subject { described_class.new(project_id) }
+
   let! :http_request do
     stub_request(:get, FireJWT::Certificates::URL.to_s).to_return(
       status: 200,
@@ -37,9 +39,7 @@ RSpec.describe FireJWT::Validator do
   let(:project_id) { 'mock-project' }
   let(:token)      { JWT.encode payload, cert.pkey, 'RS256', kid: cert.kid }
 
-  subject          { described_class.new(project_id) }
-
-  it 'should decode' do
+  it 'decodes' do
     decoded = subject.decode(token)
     expect(decoded).to be_instance_of(FireJWT::Token)
     expect(decoded).to eq(payload)
@@ -47,38 +47,39 @@ RSpec.describe FireJWT::Validator do
       'alg' => 'RS256',
       'kid' => cert.kid,
     )
+    expect(http_request).to have_been_made
   end
 
-  it 'should reject bad tokens' do
+  it 'rejects bad tokens' do
     expect { subject.decode('BAD') }.to raise_error(JWT::DecodeError)
   end
 
-  it 'should verify exp' do
+  it 'verifies exp' do
     payload['exp'] = Time.now.to_i - 1
     expect { subject.decode(token) }.to raise_error(JWT::ExpiredSignature)
   end
 
-  it 'should verify iat' do
+  it 'verifies iat' do
     payload['iat'] = Time.now.to_i + 10
     expect { subject.decode(token) }.to raise_error(JWT::InvalidIatError)
   end
 
-  it 'should verify aud' do
+  it 'verifies aud' do
     payload['aud'] = 'other'
     expect { subject.decode(token) }.to raise_error(JWT::InvalidAudError)
   end
 
-  it 'should verify iss' do
+  it 'verifies iss' do
     payload['iss'] = 'other'
     expect { subject.decode(token) }.to raise_error(JWT::InvalidIssuerError)
   end
 
-  it 'should verify sub' do
+  it 'verifies sub' do
     payload['sub'] = ''
     expect { subject.decode(token) }.to raise_error(JWT::InvalidSubError)
   end
 
-  it 'should verify auth_time' do
+  it 'verifies auth_time' do
     payload['auth_time'] = Time.now.to_i + 10
     expect { subject.decode(token) }.to raise_error(FireJWT::InvalidAuthTimeError)
   end

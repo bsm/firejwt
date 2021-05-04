@@ -17,9 +17,9 @@ import (
 	"time"
 
 	"github.com/bsm/firejwt"
+	. "github.com/bsm/ginkgo"
+	. "github.com/bsm/gomega"
 	"github.com/dgrijalva/jwt-go"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Validator", func() {
