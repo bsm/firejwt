@@ -1,6 +1,6 @@
 # FireJWT
 
-[![Build Status](https://travis-ci.org/bsm/firejwt.png?branch=master)](https://travis-ci.org/bsm/firejwt)
+[![Test](https://github.com/bsm/firejwt/actions/workflows/test.yml/badge.svg)](https://github.com/bsm/firejwt/actions/workflows/test.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Decode and validate [Google Firebase](https://firebase.google.com/) JWT tokens with [Ruby](https://www.ruby-lang.org/) and [Go](https://golang.org/).
