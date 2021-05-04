@@ -11,17 +11,18 @@ RSpec.describe FireJWT::Certificates do
     )
   end
 
-  it 'should init' do
+  it 'inits' do
     expect(subject.expires_at).to be_within(10).of(Time.now + 3600)
     expect(subject).not_to be_expired
+    expect(http_request).to have_been_made
   end
 
-  it 'should retrieve keys' do
+  it 'retrieves keys' do
     expect(subject.get('BAD')).to be_nil
     expect(subject.get(cert.kid)).to be_instance_of(OpenSSL::PKey::RSA)
   end
 
-  it 'should check/update expiration status' do
+  it 'check/updates expiration status' do
     expect(subject).not_to be_expired
     subject.expire!
     expect(subject).to be_expired
