@@ -3,5 +3,5 @@ default: test
 test:
 	go test ./...
 
-staticcheck:
-	staticcheck ./...
+lint:
+	golangci-lint run
