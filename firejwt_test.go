@@ -39,7 +39,7 @@ var _ = Describe("Validator", func() {
 	BeforeEach(func() {
 		server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("expires", "Mon, 20 Jan 2020 23:40:59 GMT")
-			json.NewEncoder(w).Encode(map[string]string{
+			_ = json.NewEncoder(w).Encode(map[string]string{
 				certKID: string(certPEM),
 			})
 		}))
