@@ -19,7 +19,7 @@ import (
 	"github.com/bsm/firejwt"
 	. "github.com/bsm/ginkgo"
 	. "github.com/bsm/gomega"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 var _ = Describe("Validator", func() {
