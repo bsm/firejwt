@@ -7,6 +7,15 @@ on:
     branches:
       - main
 jobs:
+  golint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Run lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
   go:
     runs-on: ubuntu-latest
     strategy:
