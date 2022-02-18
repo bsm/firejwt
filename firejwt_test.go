@@ -17,7 +17,7 @@ import (
 	"time"
 
 	"github.com/bsm/firejwt"
-	. "github.com/bsm/ginkgo"
+	. "github.com/bsm/ginkgo/v2"
 	. "github.com/bsm/gomega"
 	"github.com/golang-jwt/jwt/v4"
 )
