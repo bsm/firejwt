@@ -43,7 +43,7 @@ var _ = Describe("Validator", func() {
 				certKID: string(certPEM),
 			})
 		}))
-		seeds = mockClaims(time.Now().Unix())
+		seeds = mockClaims(time.Now())
 
 		var err error
 		subject, err = firejwt.Mocked(server.URL)
@@ -72,51 +72,51 @@ var _ = Describe("Validator", func() {
 	})
 
 	It("should verify exp", func() {
-		seeds.ExpiresAt = time.Now().Unix() - 1
+		seeds.ExpiresAt = jwt.NewNumericDate(time.Now().Add(-time.Second))
 		_, err := subject.Decode(generate())
-		Expect(err).To(MatchError(`token has expired`))
+		Expect(err).To(MatchError(`token is expired`))
 		Expect(err).To(BeAssignableToTypeOf(&jwt.ValidationError{}))
 	})
 
 	It("should verify iat", func() {
-		seeds.IssuedAt = time.Now().Unix() + 1
+		seeds.IssuedAt = jwt.NewNumericDate(time.Now().Add(time.Second))
 		_, err := subject.Decode(generate())
-		Expect(err).To(MatchError(`issued in the future`))
+		Expect(err).To(MatchError(`token used before issued`))
 		Expect(err).To(BeAssignableToTypeOf(&jwt.ValidationError{}))
 	})
 
 	It("should verify aud", func() {
-		seeds.Audience = "other"
+		seeds.Audience = jwt.ClaimStrings{"other"}
 		_, err := subject.Decode(generate())
-		Expect(err).To(MatchError(`invalid audience claim "other"`))
+		Expect(err).To(MatchError(`token has invalid audience`))
 		Expect(err).To(BeAssignableToTypeOf(&jwt.ValidationError{}))
 	})
 
 	It("should verify iss", func() {
 		seeds.Issuer = "other"
 		_, err := subject.Decode(generate())
-		Expect(err).To(MatchError(`invalid issuer claim "other"`))
+		Expect(err).To(MatchError(`token has invalid issuer`))
 		Expect(err).To(BeAssignableToTypeOf(&jwt.ValidationError{}))
 	})
 
 	It("should verify sub", func() {
 		seeds.Subject = ""
 		_, err := subject.Decode(generate())
-		Expect(err).To(MatchError(`subject is missing`))
+		Expect(err).To(MatchError(`token has no subject`))
 		Expect(err).To(BeAssignableToTypeOf(&jwt.ValidationError{}))
 	})
 
 	It("should verify auth time", func() {
-		seeds.AuthAt = time.Now().Unix() + 1
+		seeds.AuthAt = jwt.NewNumericDate(time.Now().Add(time.Second))
 		_, err := subject.Decode(generate())
-		Expect(err).To(MatchError(`auth-time in the future`))
+		Expect(err).To(MatchError(`token auth_time not valid`))
 		Expect(err).To(BeAssignableToTypeOf(&jwt.ValidationError{}))
 	})
 })
 
 var _ = Describe("Claims", func() {
 	It("should be JWT compatible", func() {
-		subject := mockClaims(1515151515)
+		subject := mockClaims(time.Unix(1515151515, 0))
 		Expect(json.Marshal(subject)).To(MatchJSON(`{
 			"name": "Me",
 			"picture": "https://test.host/me.jpg",
@@ -185,17 +185,12 @@ var _ = BeforeSuite(func() {
 	certPEM = buf.String()
 })
 
-func mockClaims(now int64) *firejwt.Claims {
+func mockClaims(now time.Time) *firejwt.Claims {
 	return &firejwt.Claims{
 		Name:          "Me",
 		Picture:       "https://test.host/me.jpg",
-		Subject:       "MDYwNDQwNjUtYWQ0ZC00ZDkwLThl",
 		UserID:        "MDYwNDQwNjUtYWQ0ZC00ZDkwLThl",
-		Audience:      "mock-project",
-		Issuer:        "https://securetoken.google.com/mock-project",
-		IssuedAt:      now - 1800,
-		ExpiresAt:     now + 3600,
-		AuthAt:        now,
+		AuthAt:        jwt.NewNumericDate(now),
 		Email:         "me@example.com",
 		EmailVerified: true,
 		Firebase: &firejwt.FirebaseClaim{
@@ -204,6 +199,13 @@ func mockClaims(now int64) *firejwt.Claims {
 				"google.com": {"123123123123123123123"},
 				"email":      {"me@example.com"},
 			},
+		},
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   "MDYwNDQwNjUtYWQ0ZC00ZDkwLThl",
+			Audience:  jwt.ClaimStrings{"mock-project"},
+			Issuer:    "https://securetoken.google.com/mock-project",
+			IssuedAt:  jwt.NewNumericDate(now.Add(-30 * time.Minute)),
+			ExpiresAt: jwt.NewNumericDate(now.Add(time.Hour)),
 		},
 	}
 }

@@ -16,6 +16,10 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
+func init() {
+	jwt.MarshalSingleStringAsArray = false
+}
+
 const defaultURL = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com"
 
 // Validator validates Firebase JWTs
@@ -99,11 +103,9 @@ func (v *Validator) Refresh() error {
 }
 
 var (
-	errKIDMissing   = errors.New("missing kid header")
-	errExpired      = errors.New("token has expired")
-	errIssuedFuture = errors.New("issued in the future")
-	errNoSubject    = errors.New("subject is missing")
-	errAuthFuture   = errors.New("auth-time in the future")
+	errKIDMissing   = errors.New("token is missing kid header")
+	errNoSubject    = errors.New("token has no subject")
+	errAuthFuture   = errors.New("token auth_time not valid")
 	errTokenInvalid = errors.New("token is invalid")
 )
 
@@ -118,22 +120,10 @@ func (v *Validator) verify(token *jwt.Token) (interface{}, error) {
 		return nil, fmt.Errorf("invalid kid header %q", kid)
 	}
 
-	now := time.Now().Unix()
 	claims := token.Claims.(*Claims)
-	if claims.Audience != v.audience {
-		return nil, fmt.Errorf("invalid audience claim %q", claims.Audience)
-	} else if claims.Issuer != v.issuer {
-		return nil, fmt.Errorf("invalid issuer claim %q", claims.Issuer)
-	} else if claims.Subject == "" {
-		return nil, errNoSubject
-	} else if claims.ExpiresAt <= now {
-		return nil, errExpired
-	} else if claims.IssuedAt > now {
-		return nil, errIssuedFuture
-	} else if claims.AuthAt > now {
-		return nil, errAuthFuture
+	if err := claims.validate(time.Now(), v.audience, v.issuer); err != nil {
+		return nil, err
 	}
-
 	return key.PublicKey, nil
 }
 
@@ -188,28 +178,38 @@ func (k *publicKey) UnmarshalText(data []byte) error {
 
 // Claims are included in the token.
 type Claims struct {
-	Subject   string `json:"sub,omitempty"`
-	Audience  string `json:"aud,omitempty"`
-	Issuer    string `json:"iss,omitempty"`
-	IssuedAt  int64  `json:"iat,omitempty"`
-	ExpiresAt int64  `json:"exp,omitempty"`
+	Name          string           `json:"name,omitempty"`
+	Picture       string           `json:"picture,omitempty"`
+	UserID        string           `json:"user_id,omitempty"`
+	AuthAt        *jwt.NumericDate `json:"auth_time,omitempty"`
+	Email         string           `json:"email,omitempty"`
+	EmailVerified bool             `json:"email_verified"`
+	Firebase      *FirebaseClaim   `json:"firebase,omitempty"`
 
-	Name          string         `json:"name,omitempty"`
-	Picture       string         `json:"picture,omitempty"`
-	UserID        string         `json:"user_id,omitempty"`
-	AuthAt        int64          `json:"auth_time,omitempty"`
-	Email         string         `json:"email,omitempty"`
-	EmailVerified bool           `json:"email_verified"`
-	Firebase      *FirebaseClaim `json:"firebase,omitempty"`
+	jwt.RegisteredClaims
+}
+
+func (c *Claims) validate(now time.Time, audience, issuer string) error {
+	if !c.VerifyExpiresAt(now, false) {
+		return jwt.ErrTokenExpired
+	} else if !c.VerifyIssuedAt(now, false) {
+		return jwt.ErrTokenUsedBeforeIssued
+	} else if !c.VerifyNotBefore(now, false) {
+		return jwt.ErrTokenNotValidYet
+	} else if !c.VerifyAudience(audience, true) {
+		return jwt.ErrTokenInvalidAudience
+	} else if !c.VerifyIssuer(issuer, true) {
+		return jwt.ErrTokenInvalidIssuer
+	} else if c.Subject == "" {
+		return errNoSubject
+	} else if c.AuthAt.After(now) {
+		return errAuthFuture
+	}
+	return nil
 }
 
 // FirebaseClaim represents firebase specific claim.
 type FirebaseClaim struct {
 	SignInProvider string              `json:"sign_in_provider,omitempty"`
 	Identities     map[string][]string `json:"identities,omitempty"`
-}
-
-// Valid implements the jwt.Claims interface.
-func (c *Claims) Valid() error {
-	return nil
 }
