@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name          = 'firejwt'
-  s.version       = '0.4.1'
+  s.version       = '0.5.0'
   s.authors       = ['Black Square Media Ltd']
   s.email         = ['info@blacksquaremedia.com']
   s.summary       = %(Firebase JWT validation)
@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.files         = `git ls-files -z`.split("\x0").reject {|f| f.match(%r{^spec/}) }
   s.test_files    = `git ls-files -z -- spec/*`.split("\x0")
   s.require_paths = ['lib']
-  s.required_ruby_version = '>= 2.6'
+  s.required_ruby_version = '>= 2.7'
 
   s.add_dependency 'jwt'
   s.add_development_dependency 'rake'
